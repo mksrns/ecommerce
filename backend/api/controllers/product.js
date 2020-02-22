@@ -36,3 +36,13 @@ exports.products_get_product = (req, res, next) => {
         }
     });
 }
+
+exports.products_add_product = async (req, res, next) => {
+    try {
+        const newProduct = new Product({ ...req.body });
+        const Product_ = await newProduct.save();
+        res.status(200).json({success: true, message: Product_})
+    } catch (error) {
+        res.status(500).json({success: false, message: error.message});
+    }
+}

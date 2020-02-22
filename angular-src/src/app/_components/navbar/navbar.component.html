@@ -34,7 +34,7 @@
                                 <a class="nav-link dropdown-toggle" data-toggle="dropdown" [routerLink]="['products']" role="button" aria-haspopup="true" aria-expanded="false">Aecoz</a>
                                 <div class="dropdown-menu">
                                     <!-- <a class="dropdown-item" [routerLink]="['product/abc']">abc</a> -->
-                                    <a class="dropdown-item" style="cursor: pointer;"><i class="fa fa-users"></i> My Profile</a>
+                                    <a class="dropdown-item" style="cursor: pointer;" [routerLink]="['profile']"><i class="fa fa-users"></i> My Profile</a>
                                     <div class="dropdown-divider"></div>
                                     <a class="dropdown-item" style="cursor: pointer;" (click)="logout()"><i class="fa fa-power-off"></i> Logout</a>
                                 </div>
@@ -59,7 +59,7 @@
   
         <!-- Modal body -->
         <div class="modal-body">
-            <form [formGroup]="loginForm" class="">
+            <form [formGroup]="loginForm" class="" *ngIf="signin">
                 <div class="form-group borderbtm">
                     <input formControlName="email" type="email" class="form-control" id="email">
                     <span data-placeholder="Email"></span>
@@ -74,8 +74,37 @@
                     </button>
                 </div>
             </form>
+
+            <!-- signup -->
+            <form [formGroup]="signupForm" class="" *ngIf="signup">
+                <div class="form-group borderbtm">
+                    <input formControlName="firstName" type="text" class="form-control" id="firstName">
+                    <span data-placeholder="First Name"></span>
+                </div>
+                <div class="form-group borderbtm">
+                    <input formControlName="email" type="email" class="form-control" id="email">
+                    <span data-placeholder="Email"></span>
+                </div>
+                <div class="form-group borderbtm">
+                    <input formControlName="username" type="text" class="form-control" id="username">
+                    <span data-placeholder="Username"></span>
+                </div>
+                <div class="form-group borderbtm">
+                    <input formControlName="password" type="password" class="form-control" id="pwd">
+                    <span data-placeholder="Password"></span>
+                </div>
+                <div class="center">
+                    <button type="submit" (click)="onSignupSubmit()" [disabled]="signupForm.invalid" class="btn btn-block btn-primary">
+                       Signup
+                    </button>
+                </div>
+            </form>
+
+            <p *ngIf="signup">Existing User <a style="cursor: pointer;" (click)="checkSignin('signin')">Signin </a>here</p>
+            <p *ngIf="signin">New to Aecoz? <a style="cursor: pointer;" (click)="checkSignin('signup')">Click here</a> to Signup</p>
             <hr class="style-four mt-5">
-            <button type="button" (click)="fbLogin()" class="btn btn-primary btn-block mt-5" style="background: aliceblue; COLOR:#212121">CONTINUE WITH FACEBOOK</button>
+            <button type="button" (click)="socialLogin('facebook')" class="btn btn-primary btn-block mt-5" style="background: aliceblue; COLOR:#212121">CONTINUE WITH FACEBOOK</button>
+            <button type="button" (click)="socialLogin('google')" class="btn btn-primary btn-block" style="background: aliceblue; COLOR:#212121">CONTINUE WITH Google</button>
         </div>
       </div>
     </div>

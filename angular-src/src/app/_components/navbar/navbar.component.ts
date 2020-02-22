@@ -7,6 +7,9 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { NavbarService } from 'src/app/_services/navbar.service';
+import { AuthService } from 'angularx-social-login';
+import { SocialUser } from 'angularx-social-login';
+import { GoogleLoginProvider, FacebookLoginProvider } from 'angularx-social-login';
 
 @Component({
   selector: 'app-navbar',
@@ -15,12 +18,17 @@ import { NavbarService } from 'src/app/_services/navbar.service';
 })
 export class NavbarComponent implements OnInit {
   loginForm:FormGroup;
+  signupForm:FormGroup;
   is_logged_in: boolean;
+  signin:boolean = true;
+  signup:boolean = false;
+  userData: {};
 
   constructor(
     private formbuilder: FormBuilder, 
     private router: Router, 
     public toastr: ToastrService,
+    private authService: AuthService,
     private navbarServ: NavbarService,
     private commonServ: CommonServicesService
   ) { 
@@ -58,9 +66,29 @@ export class NavbarComponent implements OnInit {
     }
 
     this.loginForm = this.formbuilder.group({ 
-      email:['', [Validators.required]],
+      email: ['', [Validators.required, Validators.email, Validators.email, Validators.pattern('^[A-Za-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,4}$')]],
       password: ['', [Validators.required]]
     });
+
+    this.signupForm = this.formbuilder.group({ 
+      firstName:['', [Validators.required]],
+      username:['', [Validators.required]],
+      email: ['', [Validators.required, Validators.email, Validators.email, Validators.pattern('^[A-Za-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,4}$')]],
+      password: ['', [Validators.required, Validators.minLength(9)]]
+      // phone: ['', [Validators.required, Validators.min(1000000000), Validators.max(999999999999)]],
+    });
+  }
+
+  onSignupSubmit() {
+    let userData = this.loginForm.value;
+    this.commonServ.post('api/auth/register', userData).subscribe(
+      (data:any) => {
+        console.log(data);
+      },
+      error => {
+        this.toastr.error(error.error.message);
+      }
+    );
   }
 
   onLoginSubmit(){
@@ -69,10 +97,14 @@ export class NavbarComponent implements OnInit {
       (data:any) => {
         localStorage.setItem('token', JSON.stringify(data.token));
         localStorage.setItem('currentUser', jwt_decode(data.token).email);
-        this.navbarServ.isLoggedIn();
-        this.ngOnInit();
-        if(localStorage.getItem('currentUser') === 'raunak948@gmail.com') {
-          this.router.navigate(['/super-admin']);
+        // this.navbarServ.isLoggedIn();
+        console.log(jwt_decode(data.token));
+        if(jwt_decode(data.token).is_admin) {
+          this.router.navigate(['/admin-dashboard']);
+        } else if(jwt_decode(data.token).is_seller) {
+          this.router.navigate(['/seller-dashboard']);
+        } else {
+          this.ngOnInit();
         }
         $("#loginModal").modal("hide");
         this.toastr.success('login successfull');
@@ -80,7 +112,7 @@ export class NavbarComponent implements OnInit {
       error => {
         this.toastr.error(error.error.message);
       }
-  );
+    );
   }
 
   logout() {
@@ -88,23 +120,70 @@ export class NavbarComponent implements OnInit {
     this.ngOnInit();
   }
 
-  fbLogin() {
-    this.commonServ.getAll('auth/facebook').subscribe((data:any) => {
-      console.log(data);
-    });
+  socialLogin(provider) {
+    if(provider == 'google') {
+      this.authService
+      .signIn(GoogleLoginProvider.PROVIDER_ID)
+      .then((data:any) => {
+        console.log(data);
+        this.userData = {
+          first_name: data.firstName,
+          last_name: data.lastName,
+          email: data.email,
+          profileImage: data.photoUrl,
+          user_type: 'user',
+          isVerified: true,
+          token: data.idToken,
+          provider: data.provider
+        }
+        console.log(this.userData);
+        this.commonServ.post('api/auth/social', this.userData).subscribe((data:any) => {
+          console.log(data);
+          localStorage.setItem('token', JSON.stringify(data.token));
+          localStorage.setItem('currentUser', jwt_decode(data.token).email);
+          console.log(jwt_decode(data.token));
+          if(jwt_decode(data.token).is_admin) {
+            this.router.navigate(['/admin-dashboard']);
+          } else if(jwt_decode(data.token).is_seller) {
+            this.router.navigate(['/seller-dashboard']);
+          } else {
+            this.ngOnInit();
+          }
+          $("#loginModal").modal("hide");
+          this.toastr.success('login successfull');
+        },
+        error => {
+          this.toastr.error(error.error.message);
+        });
+      });
+    } else if(provider == 'facebook') {
+      this.authService
+      .signIn(FacebookLoginProvider.PROVIDER_ID)
+      .then((data:any) => {
+        console.log(data);
+        this.userData = {
+          first_name: data.firstName,
+          last_name: data.lastName,
+          email: data.email,
+          profileImage: data.photoUrl,
+          user_type: 'user',
+          isVerified: true,
+          token: data.authToken,
+          provider: data.provider
+        }
+        console.log(this.userData);
+      });
+    }
   }
 
-  googleLogin() {
-  const auth2 = (<any>window).gapi.auth2.getAuthInstance();
-  auth2.signIn()
-    .then(res => {
-      const access_token = res.getAuthResponse().access_token;
-      console.log(access_token);
-      var email_id = '';
-      this.commonServ.getAll('auth/google').subscribe((data:any) => {
-        console.log(data);
-      });
-    });
+  checkSignin(status) {
+    if(status == 'signin') {
+      this.signup = false;
+      this.signin = true;
+    } else if(status == 'signup') {
+      this.signup = true;
+      this.signin = false;
+    }
   }
 }
 

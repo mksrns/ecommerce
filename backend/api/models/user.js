@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const slugify = require('slugify');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 
@@ -7,7 +8,7 @@ const Token = require('../models/token');
 
 const UserSchema = new mongoose.Schema({
     email: { type: String, unique: true, required: true, trim: true },
-    username: { type: String, unique: true, required: false, },
+    username: { type: String, unique: true, required: false },
     password: { type: String, required: true, max: 100 },
     firstName: { type: String, required: false, max: 100 },
     lastName: { type: String, required: false, max: 100 },
@@ -39,6 +40,18 @@ UserSchema.pre('save',  function(next) {
         });
     });
 });
+
+// UserSchema.pre('save',  function(next) {
+//     const user = this;
+//     user.username = slugify(user.firstName, {
+//         replacement: '-',    // replace spaces with replacement
+//         remove: null,        // regex to remove characters
+//         lower: true       // result in lower case
+//     });
+//     console.log(user.username);
+
+//     next();
+// });
 
 UserSchema.methods.comparePassword = function(password) {
     return bcrypt.compareSync(password, this.password);

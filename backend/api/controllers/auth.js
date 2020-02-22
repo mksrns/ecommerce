@@ -1,9 +1,12 @@
 const User = require('../models/user');
-
+const socialAuth = require('../models/socialAuth');
+const Token = require('../models/token');
+const bcrypt = require('bcryptjs');
+const slugify = require('slugify');
+const jwt = require('jsonwebtoken');
 const sgMail = require('@sendgrid/mail');
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-const Token = require('../models/token');
 
 // @route POST api/auth/register
 // @desc Register user
@@ -136,4 +139,40 @@ function sendEmail(user, req, res){
             });
         });
     });
+}
+
+// Social auth
+exports.socialAuth = async (req, res) => {  
+    try {
+        const { email } = req.body;
+        // Make sure this account doesn't already exist
+        const user = await User.findOne({ email });
+        if(!user) {
+            const newUser = new User({ ...req.body });
+            const newSocialAuth = new socialAuth({ ...req.body });
+            newUser.password = makepassword(9);
+            const user_ = await newUser.save();
+            newSocialAuth.access_token = req.body.token;
+            newSocialAuth.userId = user_._id;
+            newSocialAuth.save();
+            // sendEmail(user_, req, res);
+            // Login successful, write token, and send back user
+            res.status(200).json({token: user_.generateJWT(), user: user_});
+        }
+        // Login successful, write token, and send back user
+        res.status(200).json({token: user.generateJWT(), user: user});
+
+    } catch (error) {
+        res.status(500).json({success: false, message: error.message})
+    }
+};
+
+function makepassword(length) {
+    var result           = '';
+    var characters       = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    var charactersLength = characters.length;
+    for ( var i = 0; i < length; i++ ) {
+       result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
 }

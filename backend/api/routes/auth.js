@@ -47,5 +47,6 @@ router.post('/reset/:token', [
     check('confirmPassword', 'Passwords do not match').custom((value, {req}) => (value === req.body.password)),
 ], validate, Password.resetPassword);
 
+router.post('/social', Auth.socialAuth);
 
 module.exports = router;

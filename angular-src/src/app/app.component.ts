@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { CommonServicesService } from './_services/commonservice.service';
 
 @Component({
   selector: 'app-root',
@@ -6,5 +7,10 @@ import { Component } from '@angular/core';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  title = 'angular-src';
+  title = 'aecoz';
+  // navHidden: boolean = false;
+  constructor(private commonServ:CommonServicesService) {}
+  ngOnInit() {
+    // this.commonServ.hideNav.subscribe(data => this.navHidden = data);
+  }
 }

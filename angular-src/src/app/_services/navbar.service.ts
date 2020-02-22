@@ -19,10 +19,35 @@ export class NavbarService {
     return token;
   }
 
-  isLoggedIn(){
+  isSellerLoggedIn(){
     if(localStorage.getItem('token')) {
       if(jwt_decode(localStorage.getItem('token')).email === localStorage.getItem('currentUser')
-        // && jwt_decode(localStorage.getItem('token')).exp * 1000 > Date.now()
+        && jwt_decode(localStorage.getItem('token')).is_seller  
+        ) {
+          return true;
+      } 
+    } 
+    return false;
+  }
+
+  isAdminLoggedIn(){
+    if(localStorage.getItem('token')) {
+      if(jwt_decode(localStorage.getItem('token')).email === localStorage.getItem('currentUser')
+        && jwt_decode(localStorage.getItem('token')).is_admin  
+      // && jwt_decode(localStorage.getItem('token')).exp * 1000 > Date.now()
+        ) {
+          return true;
+      } 
+    } 
+    return false;
+  }
+
+  isUserLoggedIn(){
+    if(localStorage.getItem('token')) {
+      if(jwt_decode(localStorage.getItem('token')).email === localStorage.getItem('currentUser')
+        && !jwt_decode(localStorage.getItem('token')).is_admin 
+        && !jwt_decode(localStorage.getItem('token')).is_seller 
+      // && jwt_decode(localStorage.getItem('token')).exp * 1000 > Date.now()
         ) {
           return true;
       } 
@@ -33,6 +58,12 @@ export class NavbarService {
   logout(){
     localStorage.removeItem('token');
     localStorage.removeItem('currentUser');
+  }
+
+  logoutSellerAndAdmin() {
+    localStorage.removeItem('token');
+    localStorage.removeItem('currentUser');
+    this.router.navigate(['/']);
   }
 
 }

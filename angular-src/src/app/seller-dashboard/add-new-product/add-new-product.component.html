@@ -1,0 +1,23 @@
+<form [formGroup]="productForm" class="">
+    <div class="form-group borderbtm">
+        <input formControlName="title" type="text" class="form-control">
+        <span data-placeholder="title"></span>
+    </div>
+    <div class="form-group borderbtm">
+        <input formControlName="description" type="text" class="form-control">
+        <span data-placeholder="description"></span>
+    </div>
+    <div class="form-group borderbtm">
+        <input formControlName="price" type="number" class="form-control">
+        <span data-placeholder="Price"></span>
+    </div>
+    <div class="form-group borderbtm">
+        <input formControlName="imagePath" type="text" class="form-control">
+        <span data-placeholder="imagePath"></span>
+    </div>
+    <div class="center">
+        <button type="submit" (click)="onProductSubmit()" [disabled]="productForm.invalid" class="btn btn-block btn-primary">
+           Add
+        </button>
+    </div>
+</form>
