@@ -18,9 +18,11 @@ import { GoogleLoginProvider, FacebookLoginProvider } from 'angularx-social-logi
 })
 export class NavbarComponent implements OnInit {
   loginForm:FormGroup;
+  forgotPasswordForm:FormGroup;
   signupForm:FormGroup;
   is_logged_in: boolean;
   signin:boolean = true;
+  forgotPassword:boolean = false;
   signup:boolean = false;
   userData: {};
 
@@ -67,7 +69,10 @@ export class NavbarComponent implements OnInit {
 
     this.loginForm = this.formbuilder.group({ 
       email: ['', [Validators.required, Validators.email, Validators.email, Validators.pattern('^[A-Za-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,4}$')]],
-      password: ['', [Validators.required]]
+    });
+
+    this.forgotPasswordForm = this.formbuilder.group({ 
+      email: ['', [Validators.required, Validators.email, Validators.email, Validators.pattern('^[A-Za-z0-9._%+-]+@[a-z0-9.-]+\\.[a-z]{2,4}$')]],
     });
 
     this.signupForm = this.formbuilder.group({ 
@@ -80,10 +85,24 @@ export class NavbarComponent implements OnInit {
   }
 
   onSignupSubmit() {
-    let userData = this.loginForm.value;
+    let userData = this.signupForm.value;
     this.commonServ.post('api/auth/register', userData).subscribe(
       (data:any) => {
-        console.log(data);
+        this.toastr.success(data.message);
+        $("#loginModal").modal("hide");
+      },
+      error => {
+        this.toastr.error(error.error.message);
+      }
+    );
+  }
+
+  onForgotPasswordSubmit() {
+    let userData = this.forgotPasswordForm.value;
+    this.commonServ.post('api/auth/recover', userData).subscribe(
+      (data:any) => {
+        this.toastr.success(data.message);
+        $("#loginModal").modal("hide");
       },
       error => {
         this.toastr.error(error.error.message);
@@ -125,7 +144,6 @@ export class NavbarComponent implements OnInit {
       this.authService
       .signIn(GoogleLoginProvider.PROVIDER_ID)
       .then((data:any) => {
-        console.log(data);
         this.userData = {
           first_name: data.firstName,
           last_name: data.lastName,
@@ -136,12 +154,9 @@ export class NavbarComponent implements OnInit {
           token: data.idToken,
           provider: data.provider
         }
-        console.log(this.userData);
         this.commonServ.post('api/auth/social', this.userData).subscribe((data:any) => {
-          console.log(data);
           localStorage.setItem('token', JSON.stringify(data.token));
           localStorage.setItem('currentUser', jwt_decode(data.token).email);
-          console.log(jwt_decode(data.token));
           if(jwt_decode(data.token).is_admin) {
             this.router.navigate(['/admin-dashboard']);
           } else if(jwt_decode(data.token).is_seller) {
@@ -172,17 +187,39 @@ export class NavbarComponent implements OnInit {
           provider: data.provider
         }
         console.log(this.userData);
+        this.commonServ.post('api/auth/social', this.userData).subscribe((data:any) => {
+          localStorage.setItem('token', JSON.stringify(data.token));
+          localStorage.setItem('currentUser', jwt_decode(data.token).email);
+          if(jwt_decode(data.token).is_admin) {
+            this.router.navigate(['/admin-dashboard']);
+          } else if(jwt_decode(data.token).is_seller) {
+            this.router.navigate(['/seller-dashboard']);
+          } else {
+            this.ngOnInit();
+          }
+          $("#loginModal").modal("hide");
+          this.toastr.success('login successfull');
+        },
+        error => {
+          this.toastr.error(error.error.message);
+        });
       });
     }
   }
 
   checkSignin(status) {
     if(status == 'signin') {
+      this.forgotPassword = false;
       this.signup = false;
       this.signin = true;
     } else if(status == 'signup') {
+      this.forgotPassword = false;
       this.signup = true;
       this.signin = false;
+    } else if(status == 'forgotPassword') {
+      this.forgotPassword = true;
+      this.signin = false;
+      this.signup = false;
     }
   }
 }

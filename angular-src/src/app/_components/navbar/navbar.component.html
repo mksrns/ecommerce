@@ -1,4 +1,4 @@
-<div class="navigation-wrap bg-light start-header start-style">
+<div *ngIf="navbarServ.visible" class="navigation-wrap bg-light start-header start-style">
     <div class="container">
         <div class="row">
             <div class="col-12">
@@ -28,7 +28,7 @@
                                 <a class="nav-link" href="#">Faq</a>
                             </li>
                             <li class="pl-4 pl-md-0 ml-0 ml-md-4" *ngIf="!is_logged_in">
-                                <a class="btn btn-primary" data-toggle="modal" data-target="#loginModal" style="background: aliceblue;">Login</a>
+                                <a class="btn btn-primary" data-toggle="modal" data-target="#loginModal" style="background: aliceblue; padding: 4px 15px;">Login</a>
                             </li>  
                             <li class="nav-item pl-4 pl-md-0 ml-0 ml-md-4" *ngIf="is_logged_in">
                                 <a class="nav-link dropdown-toggle" data-toggle="dropdown" [routerLink]="['products']" role="button" aria-haspopup="true" aria-expanded="false">Aecoz</a>
@@ -51,62 +51,100 @@
 <div class="modal" id="loginModal">
     <div class="modal-dialog">
       <div class="modal-content">
-  
-        <!-- Modal Header -->
-        <div class="modal-header">
-          <button type="button" class="close" data-dismiss="modal">&times;</button>
-        </div>
-  
         <!-- Modal body -->
         <div class="modal-body">
-            <form [formGroup]="loginForm" class="" *ngIf="signin">
-                <div class="form-group borderbtm">
-                    <input formControlName="email" type="email" class="form-control" id="email">
-                    <span data-placeholder="Email"></span>
-                </div>
-                <div class="form-group borderbtm">
-                    <input formControlName="password" type="password" class="form-control" id="pwd">
-                    <span data-placeholder="Password"></span>
-                </div>
-                <div class="center">
-                    <button type="submit" (click)="onLoginSubmit()" [disabled]="loginForm.invalid" class="btn btn-block btn-primary">
-                       Login
-                    </button>
-                </div>
-            </form>
+            <div class="formContainer">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                  <div class="row11">
+                    <h3 style="text-align:center">Login with Social Media or Manually</h3>
+                    <div class="vl">
+                      <span class="vl-innertext">or</span>
+                    </div>
+              
+                    <div class="col11">
+                      <a (click)="socialLogin('facebook')" class="fb btn">
+                        <i class="fa fa-facebook fa-fw"></i> Login with Facebook
+                       </a>
+                      <a href="#" class="twitter btn">
+                        <i class="fa fa-twitter fa-fw"></i> Login with Twitter
+                      </a>
+                      <a (click)="socialLogin('google')" class="google btn"><i class="fa fa-google fa-fw">
+                        </i> Login with Google+
+                      </a>
+                    </div>
+              
+                    <div class="col11">
+                      <div class="hide-md-lg">
+                        <p>Or sign in manually:</p>
+                      </div>
 
-            <!-- signup -->
-            <form [formGroup]="signupForm" class="" *ngIf="signup">
-                <div class="form-group borderbtm">
-                    <input formControlName="firstName" type="text" class="form-control" id="firstName">
-                    <span data-placeholder="First Name"></span>
-                </div>
-                <div class="form-group borderbtm">
-                    <input formControlName="email" type="email" class="form-control" id="email">
-                    <span data-placeholder="Email"></span>
-                </div>
-                <div class="form-group borderbtm">
-                    <input formControlName="username" type="text" class="form-control" id="username">
-                    <span data-placeholder="Username"></span>
-                </div>
-                <div class="form-group borderbtm">
-                    <input formControlName="password" type="password" class="form-control" id="pwd">
-                    <span data-placeholder="Password"></span>
-                </div>
-                <div class="center">
-                    <button type="submit" (click)="onSignupSubmit()" [disabled]="signupForm.invalid" class="btn btn-block btn-primary">
-                       Signup
-                    </button>
-                </div>
-            </form>
+                    <form [formGroup]="loginForm" *ngIf="signin">
+                        <input formControlName="email" type="email" placeholder="Username" required>
+                        <input formControlName="password" type="password" placeholder="Password" required>
+                        <input type="submit" value="Login" (click)="onLoginSubmit()" [disabled]="loginForm.invalid">
+                    </form>
 
-            <p *ngIf="signup">Existing User <a style="cursor: pointer;" (click)="checkSignin('signin')">Signin </a>here</p>
-            <p *ngIf="signin">New to Aecoz? <a style="cursor: pointer;" (click)="checkSignin('signup')">Click here</a> to Signup</p>
-            <hr class="style-four mt-5">
-            <button type="button" (click)="socialLogin('facebook')" class="btn btn-primary btn-block mt-5" style="background: aliceblue; COLOR:#212121">CONTINUE WITH FACEBOOK</button>
-            <button type="button" (click)="socialLogin('google')" class="btn btn-primary btn-block" style="background: aliceblue; COLOR:#212121">CONTINUE WITH Google</button>
+                    <form [formGroup]="signupForm" class="" *ngIf="signup">
+                        <input formControlName="firstName" type="text" placeholder="Name" required>
+                        <input formControlName="username" type="text" placeholder="Username" required>
+                        <input formControlName="email" type="email" placeholder="email" required>
+                        <input formControlName="password" type="password" placeholder="Password" required>
+                        <input type="submit" value="Signup" (click)="onSignupSubmit()" [disabled]="signupForm.invalid">
+                    </form>
+
+                    <form [formGroup]="forgotPasswordForm" *ngIf="forgotPassword">
+                        <input formControlName="email" type="email" placeholder="Email" required>
+                        <input type="submit" value="Send password reset email" (click)="onForgotPasswordSubmit()" [disabled]="forgotPasswordForm.invalid">
+                    </form>
+                </div>
+                    
+                  </div>
+              </div>
+              
+              <div class="bottom-container">
+                <div class="row">
+                  <div class="col11">
+                    <a *ngIf="signin" style="color:white" class="btn" (click)="checkSignin('signup')">Sign up</a>
+                    <a *ngIf="signup || forgotPassword" style="color:white" class="btn" (click)="checkSignin('signin')">Signin</a>
+                  </div>
+                  <div class="col11">
+                    <a style="color:white" class="btn" (click)="checkSignin('forgotPassword')">Forgot password?</a>
+                  </div>
+                </div>
+              </div>
         </div>
       </div>
     </div>
 </div>
 <!-- Login modal ends -->
+
+<!-- <form [formGroup]="signupForm" class="" *ngIf="signup">
+    <div class="form-group borderbtm">
+        <input formControlName="firstName" type="text" class="form-control" id="firstName">
+        <span data-placeholder="First Name"></span>
+    </div>
+    <div class="form-group borderbtm">
+        <input formControlName="email" type="email" class="form-control" id="email">
+        <span data-placeholder="Email"></span>
+    </div>
+    <div class="form-group borderbtm">
+        <input formControlName="username" type="text" class="form-control" id="username">
+        <span data-placeholder="Username"></span>
+    </div>
+    <div class="form-group borderbtm">
+        <input formControlName="password" type="password" class="form-control" id="pwd">
+        <span data-placeholder="Password"></span>
+    </div>
+    <div class="center">
+        <button type="submit" (click)="onSignupSubmit()" [disabled]="signupForm.invalid" class="btn btn-block btn-primary">
+           Signup
+        </button>
+    </div>
+</form> -->
+
+<!-- <p *ngIf="signup">Existing User <a style="cursor: pointer;" (click)="checkSignin('signin')">Signin </a>here</p>
+            <p *ngIf="signin">New to Aecoz? <a style="cursor: pointer;" (click)="checkSignin('signup')">Click here</a> to Signup</p>
+            <hr class="style-four mt-5">
+            <button type="button" (click)="socialLogin('facebook')" class="btn btn-primary btn-block mt-5" style="background: aliceblue; COLOR:#212121">CONTINUE WITH FACEBOOK</button>
+            <button type="button" (click)="socialLogin('google')" class="btn btn-primary btn-block" style="background: aliceblue; COLOR:#212121">CONTINUE WITH Google</button>
+         -->

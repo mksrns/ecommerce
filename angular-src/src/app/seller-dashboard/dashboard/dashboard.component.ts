@@ -25,6 +25,7 @@ export class DashboardComponent implements OnInit {
   } 
 
   ngOnInit() {
+    this.navbarServ.hide();
   }
 
   logout(){

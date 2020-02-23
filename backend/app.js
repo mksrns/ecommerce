@@ -11,7 +11,7 @@ var session = require('express-session');
 var MongoStore = require('connect-mongo')(session);
 const bodyParser = require('body-parser');
 const path = require("path");
-
+require('zone.js/dist/zone-node');
 // Setting up port
 const connUri = process.env.MONGO_LOCAL_CONN_URL;
 let PORT = process.env.PORT || 3000;
@@ -25,9 +25,30 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+const {AppServerModuleNgFactory, LAZY_MODULE_MAP, ngExpressEngine, provideModuleMap} = require('./public/server/main');
+
+// Our Universal express-engine (found @ https://github.com/angular/universal/tree/master/modules/express-engine)
+app.engine('html', ngExpressEngine({
+  bootstrap: AppServerModuleNgFactory,
+  providers: [
+    provideModuleMap(LAZY_MODULE_MAP)
+  ]
+}));
+
+app.set('view engine', 'html');
+app.set('views', path.join(__dirname, 'public/browser'));
+// Serve static files from /browser
+app.get('*.*', express.static(path.join(__dirname, 'public/browser'), {
+    maxAge: '1y'
+}));
+  
+// All regular routes use the Universal engine
+app.get('*', (req, res) => {
+    // res.render('index', { req });
+});
 // view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+// app.set('views', path.join(__dirname, 'views'));
+// app.set('view engine', 'jade');
 
 //=== 2 - SET UP DATABASE
 // Configure mongoose's promise to global promise
@@ -41,12 +62,12 @@ connection.on('error', (err) => {
     process.exit();
 });
 
-app.use(express.static(path.join(__dirname, 'public'), {
-    maxAge: 86400000,
-        setHeaders: function(res, path) {
-            res.setHeader("Expires", new Date(Date.now() + 2592000000*30).toUTCString());
-      }
-}));
+// app.use(express.static(path.join(__dirname, 'public'), {
+//     maxAge: 86400000,
+//         setHeaders: function(res, path) {
+//             res.setHeader("Expires", new Date(Date.now() + 2592000000*30).toUTCString());
+//       }
+// }));
 
 //Morgan for testing status
 app.use(morgan('dev'));

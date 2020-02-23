@@ -11,9 +11,16 @@ import { Router } from '@angular/router';
 export class NavbarService {
   token:String; 
   redirectUrl:String;
+  visible: boolean;
 
-  constructor(private router:Router, private _http:HttpClient) { }
+  constructor(private router:Router, private _http:HttpClient) { this.visible = false; }
 
+  hide() { this.visible = false; }
+
+  show() { this.visible = true; }
+
+  toggle() { this.visible = !this.visible; }
+  
   getAuthorizationToken(){
     const token = JSON.parse(localStorage.getItem('token'));
     return token;
